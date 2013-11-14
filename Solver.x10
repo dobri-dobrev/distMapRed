@@ -16,7 +16,7 @@ public class Solver
      	* Returns an approximation of the page rank of the given web graph
      	*/
 
-        var matrix : Array_2[Double];
+        var matrix : SparseMatrix;
         var n : Long;
     	public def solve(webGraph: Rail[WebNode], dampingFactor: Double, epsilon:Double) : Rail[Double] {
     		n = webGraph.size;
@@ -24,28 +24,34 @@ public class Solver
             for(var i : Long = 0; i < webGraph.size; i++)
                 Console.OUT.println(webGraph(i));
             matrix = readInMatrix(webGraph, dampingFactor);
-            printMatrix();
-            
+            //printMatrix();
+            matrix.print();
         	return solutions;
     	}
 
-        public def readInMatrix(webGraph: Rail[WebNode], dampingFactor: Double) : Array_2[Double] {
+        public def readInMatrix(webGraph: Rail[WebNode], dampingFactor: Double) : SparseMatrix {
             val x = (1.0 - dampingFactor)/webGraph.size;
-            var temp : Array_2[Double] = new Array_2[Double](webGraph.size, webGraph.size);
-            for(var i : Long = 0; i < webGraph.size; i++) {
-                for(var j : Long = 0; j < webGraph(i).links.size(); j++) {
-                    temp(webGraph(i).links(j).id - 1, i) += dampingFactor / webGraph(i).links.size() + x;
+            Console.OUT.println("X IS "+x);
+            var temp : SparseMatrix = new SparseMatrix(n, x);
+            // for(var i : Long = 0; i < webGraph.size; i++) {
+           finish {
+            
+                for(i in 0..(webGraph.size - 1)) async {
+                    for(var j : Long = 0; j < webGraph(i).links.size(); j++) {                        
+                        temp.put(webGraph(i).links(j).id - 1, i, dampingFactor / webGraph(i).links.size() );
+                    }
                 }
-            }
+           
+            } 
             return temp;
         }
 
-        public def printMatrix() {
-            for(var i : Long = 0; i < n; i++) {
-                for(var j : Long = 0; j < n; j++) {
-                    Console.OUT.printf("%.3f\t", matrix(i, j));
-                }
-                Console.OUT.println();
-            }
-        }
+        // public def printMatrix() {
+        //     for(var i : Long = 0; i < n; i++) {
+        //         for(var j : Long = 0; j < n; j++) {
+        //             Console.OUT.printf("%.3f\t", matrix(i, j));
+        //         }
+        //         Console.OUT.println();
+        //     }
+        // }
 }

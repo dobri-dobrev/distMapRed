@@ -130,7 +130,7 @@ public class Main {
             Console.OUT.println();
             Console.OUT.println("Geometric Mean Speedup: " + geom_mean_String);
         } catch (Exception) {
-            Console.OUT.println();
+            
             Console.OUT.println("Geometric Mean Speedup: " + "None ... answer was wrong.");
         }
     }
