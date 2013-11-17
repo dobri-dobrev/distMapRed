@@ -16,42 +16,108 @@ public class Solver
      	* Returns an approximation of the page rank of the given web graph
      	*/
 
-        var matrix : SparseMatrix;
         var n : Long;
     	public def solve(webGraph: Rail[WebNode], dampingFactor: Double, epsilon:Double) : Rail[Double] {
-    		n = webGraph.size;
+    		Console.OUT.println("called");
+            n = webGraph.size;
     		var solutions:Rail[Double] = new Rail[Double](webGraph.size, (i:Long)=>1.0/webGraph.size);
-            for(var i : Long = 0; i < webGraph.size; i++)
-                Console.OUT.println(webGraph(i));
-            matrix = readInMatrix(webGraph, dampingFactor);
-            //printMatrix();
-            matrix.print();
-        	return solutions;
+            // for(var i : Long = 0; i < webGraph.size; i++)
+            //     Console.OUT.println(webGraph(i));
+            val matrix = readInMatrix(webGraph, dampingFactor);
+            var v1: VectorWithSum = new VectorWithSum(matrix.size);
+            v1.defaultVals();
+            //v1.print();
+            //Console.OUT.println();
+            //matrix.print();
+            //Console.OUT.println();
+            var v2: VectorWithSum = multiply(matrix, v1);
+            //v2.print();
+            
+            var count:Long = 0;
+            while(difference(v1,v2)>epsilon){
+            //while(count<10){
+                count+=1;
+                v1 = v2;
+                v2 = multiply(matrix, v1);
+            }
+            
+            //Console.OUT.println("number of iterations "+count);
+            //v2.print();
+            //matrix.print();
+        	v2.print();
+            return v2.v;
+            //return new Rail[Double](3);
     	}
 
         public def readInMatrix(webGraph: Rail[WebNode], dampingFactor: Double) : SparseMatrix {
             val x = (1.0 - dampingFactor)/webGraph.size;
-            Console.OUT.println("X IS "+x);
+            val y = dampingFactor/webGraph.size;
+            //Console.OUT.println("X IS "+x);
             var temp : SparseMatrix = new SparseMatrix(n, x);
-            // for(var i : Long = 0; i < webGraph.size; i++) {
+            Console.OUT.println("Start read");           
            finish {
             
-                for(i in 0..(webGraph.size - 1)) async {
-                    for(var j : Long = 0; j < webGraph(i).links.size(); j++) {                        
-                        temp.put(webGraph(i).links(j).id - 1, i, dampingFactor / webGraph(i).links.size() );
-                    }
+                for(i in 0..(webGraph.size - 1)) async{
+                     
+                        if(webGraph(i).links.size()==0){
+                            for(var j: Long = 0; j<webGraph.size; j++){
+                                temp.put(i, j, y);
+                                //Console.OUT.println(y);
+                            }
+                        }
+                        else{
+                            for(var j : Long = 0; j < webGraph(i).links.size(); j++) {                        
+                               temp.put(i, webGraph(i).links(j).id - 1, dampingFactor / webGraph(i).links.size() );
+                               //Console.OUT.println(dampingFactor / webGraph(i).links.size());
+                            }    
+                        }
                 }
            
             } 
+            Console.OUT.println("End read");
             return temp;
         }
 
-        // public def printMatrix() {
-        //     for(var i : Long = 0; i < n; i++) {
-        //         for(var j : Long = 0; j < n; j++) {
-        //             Console.OUT.printf("%.3f\t", matrix(i, j));
-        //         }
-        //         Console.OUT.println();
-        //     }
-        // }
+        public def multiply(matrix: SparseMatrix, vector: VectorWithSum) : VectorWithSum {
+                var result: VectorWithSum = new VectorWithSum(matrix.size);
+                Console.OUT.println("Start multiply");
+                finish {
+                    for(i in 0..(matrix.size-1)) async{
+                         result.add(i, multiplyRow(matrix, i, vector, matrix.cons));
+                    }
+                }
+                Console.OUT.println("End multiply");
+                Console.OUT.println("Start normalize");
+                finish{
+                    for(i in 0..(result.v.size-1)) async {
+                         result.v(i) = result.get(i)/result.sum;
+                    }
+                }
+                Console.OUT.println("end normalize");
+                result.sum = 1;
+
+                return result;
+        }
+        public def multiplyRow(matrix: SparseMatrix, p:Long, vector: VectorWithSum, cons: Double):Double{
+            val row = matrix.getRow(p);
+            var result:Double = 0;
+            for(var i: Long = 0; i< row.size(); i++){
+                val tup = row.get(i);
+                result += tup.value * vector.get(tup.x);
+            }
+            result += cons * vector.sum;
+            return result;
+        }
+        public def difference(v1:VectorWithSum, v2:VectorWithSum):Double{
+            var deltaSquared:Double = 0;
+            for(var i:Int = 0n; i<v1.v.size; i++) {
+                deltaSquared += Math.abs(v1.get(i)-v2.get(i));
+            }
+            //v1.print();
+            //v2.print();
+            
+            //Console.OUT.println("difference is "+deltaSquared);
+            return(deltaSquared);
+        }
+
 }

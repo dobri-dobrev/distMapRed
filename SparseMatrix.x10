@@ -28,7 +28,7 @@ public class SparseMatrix
 		for(var i:Long = 0; i<size; i++){
 			var strTemp: String = "";
 			for(var j:Long = 0; j<size; j++){
-				val t = find(i, j);
+				val t = find(j,i);
 				if(t == -1.0){
 					Console.OUT.printf("%.3f\t", cons);
 				}

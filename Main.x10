@@ -120,7 +120,7 @@ public class Main {
         }
 
         Console.OUT.println("");
-        try {
+        //try {
             var prod: double = 1.0;
             for (input in challengeInputs)
                 prod *= run_one_test(input);
@@ -129,10 +129,10 @@ public class Main {
             val geom_mean_String: String = String.format("%.2f", new Rail[Any](1, geom_mean));
             Console.OUT.println();
             Console.OUT.println("Geometric Mean Speedup: " + geom_mean_String);
-        } catch (Exception) {
-            
+        //} catch (Exception) {
+            Console.OUT.println();
             Console.OUT.println("Geometric Mean Speedup: " + "None ... answer was wrong.");
-        }
+        //}
     }
 
 

@@ -6,12 +6,12 @@ public class VectorWithSum{
 
 	public def this(s: Long){
 		v = new Rail[Double](s);
-		sum = 0;
+		sum = 0.0;
 	}
 
 	public def defaultVals(){
-		v.fill(1/v.size);
-		sum = 1;
+		v.fill(1.0/v.size);
+		sum = 1.0;
 	}
 
 	public def add(x:Long, value: Double){
@@ -20,5 +20,11 @@ public class VectorWithSum{
 	}
 	public def get(x:Long):Double{
 		return v(x);
+	}
+	public def print(){
+		for(var i:Long = 0; i<v.size; i++){
+			Console.OUT.printf("%.3f\t", v(i));
+		}
+		Console.OUT.println();
 	}
 }
