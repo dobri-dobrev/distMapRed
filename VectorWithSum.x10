@@ -14,11 +14,14 @@ public class VectorWithSum{
 		sum = 1.0;
 	}
 
-	public def add(x:Long, value: Double){
-		v(x) = value;
-		sum+= value;
+	public atomic def add(x:Long, value: Double){
+		
+			v(x) = value;
+			sum+= value;
+		
+		
 	}
-	public def get(x:Long):Double{
+	public atomic def get(x:Long):Double{
 		return v(x);
 	}
 	public def print(){

@@ -16,11 +16,11 @@ public class SparseMatrix
 		}
 	}
 
-	public def getRow(x:Long): ArrayList[Tuple]{
+	public atomic def getRow(x:Long): ArrayList[Tuple]{
 		return matrix(x);
 	}
 
-	public def put(x: Long, y: Long, value: Double){
+	public atomic def put(x: Long, y: Long, value: Double){
 		matrix(y).add(new Tuple(x, value));
 	} 
 

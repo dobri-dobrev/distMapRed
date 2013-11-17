@@ -1,6 +1,7 @@
 import x10.util.Timer;
 import x10.util.ArrayList;
 import x10.array.Array_2;
+import x10.lang.Runtime;
 
 /**
  * This is the class that provides the solve() method.
@@ -74,39 +75,73 @@ public class Solver
                 }
            
             } 
-            Console.OUT.println("End read");
+            //Console.OUT.println("End read");
             return temp;
         }
 
         public def multiply(matrix: SparseMatrix, vector: VectorWithSum) : VectorWithSum {
                 var result: VectorWithSum = new VectorWithSum(matrix.size);
-                Console.OUT.println("Start multiply");
-                finish {
-                    for(i in 0..(matrix.size-1)) async{
-                         result.add(i, multiplyRow(matrix, i, vector, matrix.cons));
-                    }
-                }
-                Console.OUT.println("End multiply");
-                Console.OUT.println("Start normalize");
+                val piece = matrix.size/x10.lang.Runtime.NTHREADS + 1;
+                val pieceSizeForLast = piece - (x10.lang.Runtime.NTHREADS * piece - matrix.size);
                 finish{
-                    for(i in 0..(result.v.size-1)) async {
-                         result.v(i) = result.get(i)/result.sum;
+                    for(i in 0..(x10.lang.Runtime.NTHREADS-1)) async{
+                        //atomic{
+                        Console.OUT.println("piece is "+piece+" matrix size is "+ matrix.size+" start is "+piece*i+ " end is "+ (piece*i+ piece));
+                        if(i == x10.lang.Runtime.NTHREADS-1) {
+                            var resPiece: Rail[Double] = multiplyPiece(piece*i, pieceSizeForLast, matrix, vector);
+                            var count: Long = 0;
+                            for(var j:Long = piece*i; j<(piece*i+pieceSizeForLast); j++){
+                                atomic result.add(j, resPiece(count));
+                                atomic count+=1;
+                            }
+                        }
+                        else {
+                            var resPiece: Rail[Double] = multiplyPiece(piece*i, piece, matrix, vector);
+                            var count: Long = 0;
+                            for(var j:Long = piece*i; j<(piece*i+piece); j++){
+                                atomic result.add(j, resPiece(count));
+                                atomic count+=1;
+                            }
+                        }
+                        //}
+                        
                     }
                 }
-                Console.OUT.println("end normalize");
+                //Console.OUT.println("End multiply");
+                //Console.OUT.println("Start normalize");
+                finish{
+                    for(i in 0..(result.v.size-1))  {
+                        atomic result.v(i) = result.get(i)/result.sum;
+                    }
+                }
+                //Console.OUT.println("end normalize");
                 result.sum = 1;
 
                 return result;
         }
-        public def multiplyRow(matrix: SparseMatrix, p:Long, vector: VectorWithSum, cons: Double):Double{
-            val row = matrix.getRow(p);
-            var result:Double = 0;
-            for(var i: Long = 0; i< row.size(); i++){
-                val tup = row.get(i);
-                result += tup.value * vector.get(tup.x);
+        public def multiplyPiece(start: Long, pieceSize: Long, matrix: SparseMatrix, vector: VectorWithSum ): Rail[Double]{
+            var out: Rail[Double] = new Rail[Double](pieceSize);
+            for(var i:Long = 0; i< pieceSize; i++){
+                out(i) = multiplyRow(matrix, i+start, vector, matrix.cons);
             }
-            result += cons * vector.sum;
-            return result;
+            return out;
+        }
+
+        public def multiplyRow(matrix: SparseMatrix, p:Long, vector: VectorWithSum, cons: Double):Double{
+            //Console.OUT.println("Start get");
+           
+           finish{
+                val row = matrix.getRow(p);
+                //Console.OUT.println("end get");
+                var result:Double = 0;
+                for(var i: Long = 0; i< row.size(); i++){
+                    val tup = row.get(i);
+                    result += tup.value * vector.get(tup.x);
+                }
+                result += cons * vector.sum;
+                return result;
+          } 
+            
         }
         public def difference(v1:VectorWithSum, v2:VectorWithSum):Double{
             var deltaSquared:Double = 0;
