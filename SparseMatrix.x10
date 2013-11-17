@@ -16,7 +16,7 @@ public class SparseMatrix
 		}
 	}
 
-	public atomic def getRow(x:Long): ArrayList[Tuple]{
+	public  def getRow(x:Long): ArrayList[Tuple]{
 		return matrix(x);
 	}
 

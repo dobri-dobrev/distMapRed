@@ -21,7 +21,7 @@ public class VectorWithSum{
 		
 		
 	}
-	public atomic def get(x:Long):Double{
+	public def get(x:Long):Double{
 		return v(x);
 	}
 	public def print(){

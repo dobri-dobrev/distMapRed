@@ -45,7 +45,7 @@ public class Solver
             //Console.OUT.println("number of iterations "+count);
             //v2.print();
             //matrix.print();
-        	v2.print();
+        	//v2.print();
             return v2.v;
             //return new Rail[Double](3);
     	}
@@ -55,7 +55,7 @@ public class Solver
             val y = dampingFactor/webGraph.size;
             //Console.OUT.println("X IS "+x);
             var temp : SparseMatrix = new SparseMatrix(n, x);
-            Console.OUT.println("Start read");           
+            //Console.OUT.println("Start read");           
            finish {
             
                 for(i in 0..(webGraph.size - 1)) async{
@@ -82,25 +82,25 @@ public class Solver
         public def multiply(matrix: SparseMatrix, vector: VectorWithSum) : VectorWithSum {
                 var result: VectorWithSum = new VectorWithSum(matrix.size);
                 val piece = matrix.size/x10.lang.Runtime.NTHREADS + 1;
-                val pieceSizeForLast = piece - (x10.lang.Runtime.NTHREADS * piece - matrix.size);
+                val pieceSizeForLast = matrix.size- (x10.lang.Runtime.NTHREADS-1) * piece ;
                 finish{
                     for(i in 0..(x10.lang.Runtime.NTHREADS-1)) async{
                         //atomic{
-                        Console.OUT.println("piece is "+piece+" matrix size is "+ matrix.size+" start is "+piece*i+ " end is "+ (piece*i+ piece));
+                        //Console.OUT.println("piece is "+piece+" matrix size is "+ matrix.size+" start is "+piece*i+ " end is "+ (piece*i+ piece));
                         if(i == x10.lang.Runtime.NTHREADS-1) {
                             var resPiece: Rail[Double] = multiplyPiece(piece*i, pieceSizeForLast, matrix, vector);
                             var count: Long = 0;
                             for(var j:Long = piece*i; j<(piece*i+pieceSizeForLast); j++){
-                                atomic result.add(j, resPiece(count));
-                                atomic count+=1;
+                                result.add(j, resPiece(count));
+                                count+=1;
                             }
                         }
                         else {
                             var resPiece: Rail[Double] = multiplyPiece(piece*i, piece, matrix, vector);
                             var count: Long = 0;
                             for(var j:Long = piece*i; j<(piece*i+piece); j++){
-                                atomic result.add(j, resPiece(count));
-                                atomic count+=1;
+                                result.add(j, resPiece(count));
+                                count+=1;
                             }
                         }
                         //}
