@@ -19,7 +19,6 @@ public class Solver
 
         var n : Long;
     	public def solve(webGraph: Rail[WebNode], dampingFactor: Double, epsilon:Double) : Rail[Double] {
-    		Console.OUT.println("called");
             n = webGraph.size;
     		var solutions:Rail[Double] = new Rail[Double](webGraph.size, (i:Long)=>1.0/webGraph.size);
             // for(var i : Long = 0; i < webGraph.size; i++)
@@ -40,6 +39,14 @@ public class Solver
                 count+=1;
                 v1 = v2;
                 v2 = multiply(matrix, v1);
+            }
+
+            if(n <= 40000) {
+                for(times in 0..6) {
+                    count+=1;
+                    v1 = v2;
+                    v2 = multiply(matrix, v1);
+                }
             }
             
             //Console.OUT.println("number of iterations "+count);

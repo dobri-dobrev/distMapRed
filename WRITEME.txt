@@ -1,0 +1,70 @@
+Dobri Dobrev and Dylan Drop
+dmd2169, dhd2110
+
+Assignment 3 WRITEME
+============
+
+For this assignment, we implemented several improvements to the
+straightforward PageRank algorithm. First, you'll notice that we have
+a class SparseMatrix which makes our matrix multiplication quite a bit
+quicker. The way the SparseMatrix is stored as is follows:
+
+- We know the PageRank matrix is actually made up of the sum of two matrices,
+the outlink matrix and the matrix that is filled with identical values, each
+of which is equal to (1 - d)/n. Let's call this constant k.
+- In the SparseMatrix representation, we only store the outlink matrix, 
+keeping each row as an ArrayList of tuples, each of which represents that matrix
+entry. Entries equal to 0 are not stored.
+- Our resultant vector constantly keeps track of the sum of all its entries, 
+which we'll call vSum.
+
+Now imagine we have the following matrix:
+
+| a 0 c 0 |
+| . . . . |
+| . . . . |
+
+and we want to multiply the first row times the vector
+
+| d e f g |
+
+Keeping in mind the extra constant k that needs to be added in,
+sum = (a+k)*d + (0+k)*e +(c+k)*f + (k+0)*g
+
+But we can do this more efficiently with SparseMatrix! In our SparseMatrix 
+representation, the representation of this row is 
+
+(1, a), (3, c)
+
+So if we multiply v[1]*a, and v[3]*b, which gives us the same result. But we
+need to account for the constant k. We can easily achieve this by noting:
+sum = (a+k)*d + (0+k)*e +(c+k)*f + (k+0)*g
+  = a*d + c*f + k*(d + e + f + g)
+  = a*d + c*f + k*vSum
+
+Thus our computation time is significantly improved. We only have to deal with
+the entries for which their corresponding entries in the outlinks are not zero.
+
+
+--
+
+Another thing we did was cut the matrix into pieces when we're multiplying, 
+dividing set of rows up to be multiplied according to how many threads we have.
+So if we have a matrix of size 12, and NTHREADS=3, each thread would be responsible
+for multiplying 4 rows.
+
+
+-- 
+
+What didn't work: asyncronously firing each row multiplication separately in a for 
+loop. The overhead of this was terrible, and so we ended up doing the 
+aforementioned divisioning of rows according to the number of threads.
+
+We also tried reading in the outlinks into a HashSet instead of an ArrayList, however
+we found that this slowed performance during matrix multiplication even though it
+significantly improved read time.
+
+Also we noticed (even on SpiceRack) that increasing the amount of threads from 
+8 to 24 decreases performance.
+
+If we had more time: we'd improve the read time somehow. Our biggest bottleneck was initializing the Matrix.
